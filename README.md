@@ -1,5 +1,5 @@
 # PWS Deployment URL:
-`http://isaac-jesse-coquetteshop.pbp.cs.ui.ac.id/`
+http://isaac-jesse-coquetteshop.pbp.cs.ui.ac.id/
 
 
 ## How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-2)
