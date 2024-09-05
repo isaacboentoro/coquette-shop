@@ -10,7 +10,7 @@ First, I created the main directory `coquette_shop` with:
 mkdir coquette-shop
 ```
 
-To avoid Python version conflicts and to contain the project, we use a Python virtual environment:
+To avoid Python version conflicts and to contain the project, I use a Python virtual environment:
 ```
 python -m venv env
 env\Scripts\activate
@@ -42,7 +42,7 @@ python manage.py startapp main
 ### Performing routing in the project so that the application `main` can run
 This 'main' app needs to be added to the project directory (coquette_shop, not coquette-shop) settings.py **INSTALLED_APPS** field.
 
-So far, 'main' does not have any html files to display, so we will add one in the templates directory as such:
+So far, 'main' does not have any html files to display, so I will add one in the templates directory as such:
 ```
 cd main
 mkdir templates
