@@ -2,7 +2,7 @@
 http://isaac-jesse-coquetteshop.pbp.cs.ui.ac.id/
 
 
-## How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-2)
+# How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-2)
 
 ### Creating a new Django project
 First, I created the main directory `coquette_shop` with:
@@ -102,7 +102,7 @@ I created a PWS project named coquetteshop, added `isaac-jesse-coquetteshop.pbp.
 
 ## Diagram explaining flow from Client request to `urls.py`, `views.py`, `models.py`, and the `html` file
 
-![Diagram](diagram.png)
+![Diagram](readme_images/diagram.png)
 
 ## The use of `git` in software development
 
@@ -129,7 +129,7 @@ is_valid() is used to validate the user input before saving it to the database. 
 ## CSRF Token 
 CSRF Tokens are a hidden field that makes sure that the connection between the user's web browser is valid with the website. This prevents Cross-Site Request Forgery attacks, where a malicious website tricks a user's browser into falsely performing actions on another website where they are already authenticated. Without this, it is possible for the user's web browser to be manipulated and submit data to the Django form without their consent.
 
-## How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-3)
+# How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-3)
 
 ### Setting up base template
 To avoid code repetition and ease extending the site template, I created a template directory in the root directory and created `base.html`.
@@ -139,7 +139,7 @@ To reflect these changes, I then added BASE_DIR / 'templates' in settings.py to 
 ### Creating forms
 In the 'main' application folder, I created `forms.py` which uses the previously created `Product` model in `models.py`.
 
-```
+```py
 from django.forms import ModelForm
 from main.models import Product
 
@@ -152,7 +152,7 @@ class ProductEntryForm(ModelForm):
 
 To correctly identify each `Product` model, I added a UUID to the model as such:
 
-```
+```py
 class Product(modelsModel):
     ...
    id = models.UUIDField(primary_key = True, default=uuid.uuid4, editable=False)
@@ -163,7 +163,7 @@ class Product(modelsModel):
 Using codeblocks, I created `create_product.html` that uses the form created earlier, and then displayed the stored models in `main.html` by returning all Products in `views.py` as context.
 
 `create_product.html`
-```
+```html
 {% extends 'base.html' %} 
 {% block content %}
 <h1>Add Product</h1>
@@ -186,7 +186,7 @@ Using codeblocks, I created `create_product.html` that uses the form created ear
 
 `main.html`
 
-```
+```html
 {% if not products %}
 <p>There are no producs.</p>
 {% else %}
@@ -220,7 +220,7 @@ Using codeblocks, I created `create_product.html` that uses the form created ear
 ```
 
 `views.py`
-```
+```py
 def show_main(request):
     ...
     return render(request, "main.html", context)
@@ -229,7 +229,7 @@ def show_main(request):
 ```
 Then, added the actual form to `views.py` and implemented input validation.
 `views.py`
-```
+```py
 def create_product(request):
        form = ProductEntryForm(request.POST or None)
        if form.is_valid() and request.method == "POST":
@@ -244,7 +244,7 @@ def create_product(request):
 
 `views.py`
 
-```
+```py
 
 def show_xml(request):
         data = Product.objects.all()
@@ -264,7 +264,7 @@ def show_json_by_id(request, id):
 ```
 
 ## Using Postman to test GET requests:
-![postman test](postman_1.png)
-![postman test](postman_2.png)
-![postman test](postman_3.png)
-![postman test](postman_4.png)
+![postman test](readme_images/postman_1.png)
+![postman test](readme_images/postman_2.png)
+![postman test](readme_images/postman_3.png)
+![postman test](readme_images/postman_4.png)
