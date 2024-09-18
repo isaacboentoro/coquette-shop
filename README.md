@@ -1,7 +1,8 @@
 # PWS Deployment URL:
 http://isaac-jesse-coquetteshop.pbp.cs.ui.ac.id/
 
-
+<details>
+<Summary><b>Assignment 2</b></Summary>
 # How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-2)
 
 ### Creating a new Django project
@@ -115,7 +116,10 @@ In my opinion, Django is fairly straightforward to setup, and has an inherent us
 ## Why is Django called an ORM?
 
 Django is called an ORM because it maps entries in a database to objects in the object oriented programming language (namely, Python). Django in particular does this through the `models.py` file.
+</details>
 
+<details>
+<Summary><b>Assignment 3</b></Summary>
 ## Why do we need Data delivery in implementing a platform?
 
 Data delivery is useful to enable asynchronous communication between users of the platform, or between the administrator of the platform and its users. Platforms cannot function effectively as just a static site.
@@ -268,3 +272,5 @@ def show_json_by_id(request, id):
 ![postman test](readme_images/postman_2.png)
 ![postman test](readme_images/postman_3.png)
 ![postman test](readme_images/postman_4.png)
+
+</details>
