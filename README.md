@@ -274,3 +274,223 @@ def show_json_by_id(request, id):
 ![postman test](readme_images/postman_4.png)
 
 </details>
+<details>
+<Summary><b>Assignment 4</b></Summary>
+# How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-4)
+
+
+## Creating the register, log in and log out functions
+In `views.py`, I added the following lines:
+
+```py
+def register(request):
+        form = UserCreationForm()
+        if request.method == "POST":
+                form = UserCreationForm(request.POST)
+                if form.is_valid():
+                        form.save()
+                        messages.success(request, 'Your account has been successfully created!')
+                        return redirect('main:login')
+        context = {'form':form}
+        return render(request, 'register.html', context)
+
+def login_user(request):
+        if request.method == 'POST':
+                form = AuthenticationForm(data=request.POST)
+
+                if form.is_valid():
+                        user = form.get_user()
+                        if user is not None:
+                                login(request, user)
+                                response = HttpResponseRedirect(reverse("main:show_main"))
+                                response.set_cookie('last_login', str(datetime.datetime.now()))
+                                return response
+                        # login(request, user)
+                        # response = HttpResponseRedirect(reverse("main:show_main"))
+                        # response.set_cookie('last_login', str(datetime.datetime.now()))
+                        # return response
+        else:
+                form = AuthenticationForm(request)
+
+        context = {'form':form}
+        return render(request, 'login.html', context)
+        
+
+def logout_user(request):
+        logout(request)
+        response = HttpResponseRedirect(reverse('main:login'))
+        response.delete_cookie('last_login')
+        return response
+```
+
+The login and logout functions also use cookies to automatically log-in a user unless specified otherwise. The cookie is then sent as context to `show_main`:
+
+`views.py`
+```py
+def show_main(request):
+...
+                'last_login': request.COOKIES['last_login'],
+        }
+        return render(request, "main.html", context)  
+```
+
+Since the `register` function expects a `register.html`, let's make that:
+```html
+{% extends 'base.html' %} {% block meta %}
+<title>Register</title>
+{% endblock meta %} {% block content %}
+
+<div class="login">
+  <h1>Register</h1>
+
+  <form method="POST">
+    {% csrf_token %}
+    <table>
+      {{ form.as_table }}
+      <tr>
+        <td></td>
+        <td><input type="submit" name="submit" value="Register" /></td>
+      </tr>
+    </table>
+  </form>
+
+  {% if messages %}
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+
+{% endblock content %}
+```
+
+This `register.html` file extends to the main template `base.html` for simplicity.
+
+Now to perform routing on all of these new functions, import them to `urls.py` and add them to `urlpatterns`:
+
+`urls.py`
+```py
+from main.views import (
+      ...
+      register,
+      login_user,
+      logout_user,
+      ...
+)
+
+app_name = 'main'
+urlpatterns = [
+        ...
+        path('register/', register, name='register'),
+        path('login/', login_user, name='login'),
+        path('logout/', logout_user, name='logout'),
+        ...
+]
+```
+
+Since we want to force users to login before accessing the site, we can add that restriction to the `show_main` function as such:
+
+```py
+from django.contrib.auth.decorators import login_required
+
+
+@login_required(login_url='/login')
+def show_main(request):
+...
+```
+
+## Connecting the `Product` model to each user:
+
+`views.py`
+```py
+def show_main(request):
+        products = Product.objects.filter(user=request.user)
+        context = {
+        ...
+```
+
+`models.py`
+```py
+class Product(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ...
+```
+
+This makes each instance of the `Product` model tied to each user, so that only authorized users can view their respective `Product` models.
+
+We also modify `create_product` in `views.py` as such, to modify the `user` field *before* saving it to the database to tie it to the user that created it.
+
+```py
+def create_product(request):
+       form = ProductEntryForm(request.POST or None)
+       if form.is_valid() and request.method == "POST":
+              # These lines
+              product = form.save(commit=False)
+              product.user = request.user
+              product.save()
+              #
+              return redirect('main:show_main')
+       context = {'form': form}
+       return render(request, "create_product.html", context)
+```
+
+## Difference between `HttpResponseRedirect()` and `redirect()`
+
+`HttpResponseRedirect()`:
+
+Usage: Redirects to a URL.
+Syntax: Requires a URL string.
+
+`redirect()`:
+
+Usage: A shortcut for redirection.
+Syntax: Can take a URL, a view name, or a view name with arguments.
+
+## How is `Product` model linked with `User`?
+
+The `Product` model is linked to each user via a foreign-key approach:
+
+`models.py`
+
+```py
+class Product(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+```
+
+And when each Product is created via `create_product`, it is linked to the user:
+
+`views.py`
+```py
+def create_product(request):
+       form = ProductEntryForm(request.POST or None)
+       if form.is_valid() and request.method == "POST":
+              product = form.save(commit=False)
+              product.user = request.user
+```
+
+## Difference between authentication and authorization, and what happens when a user logs in.
+
+Authentication: Verifying the identity of a user (ensuring they are who they claim to be)
+
+Django implements this with built in views and forms such as `LoginView`, `LogoutView`, and `AuthenticationForm`
+
+Authorization: Determining what an authenticated user is allowed to do based on its roles and permissions.
+
+Django implements this via the `User` model and `Permissions`.
+
+What hapepns when a user logs in?
+1. User submits Login form
+2. Authentication
+- Django checks if the provided credentials are in the database
+- The user is then authenticated
+3. Session creation:
+- Django creates a session for the authenticated user
+- Session ID is stored as a cookie on the user's browsesr
+4. User Object:
+- Authenticated users are associated with a `User` object, accessible via `request.user` in `views.py`.
+5. Redirection
+- The user is then redirected to `main.html`
+
+</details>
