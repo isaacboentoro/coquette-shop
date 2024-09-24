@@ -470,6 +470,27 @@ def create_product(request):
               product.user = request.user
 ```
 
+## How does Django remember logged in users? What are the other uses of cookies and are all of them safe?
+
+Django uses sessions and cookies stored on the user's browser to remember logged in users. 
+
+Cookies can be used for other uses, such as:
+- User settings
+- Tracking and analytics
+- Authentication tokens
+
+Not all cookies are inherently safe, and the safety of said cookies depends on how they are implemented and managed.
+
+- Cookies should be marked as secure to enable that they are only sent over HTTPS connections.
+
+- Marking them as HttpOnly prevents client scripts from accessing them, reducing the risk of XSS (Cross site scripting) attacks.
+
+- The SameSite attribute helps prevent cross-site request forgery attacks
+
+- Cookies should have a set expiration date
+
+- Cookies should not be used to store sensitive information directly inside. Instead, use session IDs or tokens that reference server-side data.
+
 ## Difference between authentication and authorization, and what happens when a user logs in.
 
 Authentication: Verifying the identity of a user (ensuring they are who they claim to be)
