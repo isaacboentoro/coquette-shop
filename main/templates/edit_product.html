@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Edit Product</h1>
+
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <form method="POST">
+            {% csrf_token %}
+            <table class="w-full">
+                {% for field in form %}
+                    <tr class="mb-4">
+                        <td class="pr-4 py-2">
+                            <label class="block text-gray-700 text-sm font-bold" for="{{ field.id_for_label }}">
+                                {{ field.label }}:
+                            </label>
+                        </td>
+                        <td class="py-2">
+                            {{ field }}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <div class="flex items-center justify-between mt-6">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                    Save Changes
+                </button>
+                <a class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="{% url 'main:show_main' %}">
+                    Back to Main
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
