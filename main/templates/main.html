@@ -25,9 +25,12 @@
     </div>
 
     {% if not products %}
-        <p class="text-lg text-gray-600">There are no products.</p>
+    <p class="text-lg text-gray-600">There are no products.</p>
     {% else %}
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -41,10 +44,10 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for product in products %}
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{product.name}}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{product.price}}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{product.description}}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{product.coquetteness}}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ product.name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.price }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.description }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.coquetteness }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <a href="{% url 'main:edit_product' product.id %}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                                 <a href="{% url 'main:delete_product' product.id %}" class="text-red-600 hover:text-red-900">Delete</a>
@@ -54,15 +57,18 @@
                 </tbody>
             </table>
         </div>
-    {% endif %}
+    </div>
+{% endif %}
 
-    <div class="mt-8 flex justify-between">
-        <a href="{% url 'main:create_product' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Add New Product
-        </a>
-        <a href="{% url 'main:logout' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Logout
-        </a>
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-4 mt-8">
+        <div class="flex justify-between items-center p-4">
+            <div>
+                <a href="{% url 'main:create_product' %}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add Product</a>
+            </div>
+            <div>
+                <a href="{% url 'main:logout' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</a>
+            </div>
+        </div>
     </div>
 
     <p class="mt-8 text-sm text-gray-500">Last login session: {{ last_login }}</p>

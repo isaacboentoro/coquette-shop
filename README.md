@@ -515,3 +515,188 @@ What hapepns when a user logs in?
 - The user is then redirected to `main.html`
 
 </details>
+
+<details>
+<Summary><b>Assignment 5</b></Summary>
+## Priority of CSS Selectors
+
+1. Inline Styles
+2. ID Selectors
+3. Class, Attribute and Pseudo-Class Selectors
+4. Element and Pseudo-Element Selectors
+5. `!important` overrides everything else.
+
+## Why use Responsive design?
+
+With the growng number of users accessing websites via Mobile devices, having a responsive design ensures that your site is suitable and usable from mobile devices.
+Some examples of websites with responsive design would be `https://tokopedia.com`, and a website that does not implement responsive design would be `https://aren.cs.ui.ac.id/kitba`
+
+
+## Margin vs Border vs Padding
+
+1. Margin is the space outside of a border
+2. Border is the line that surrounds the padding of an element
+3. Padding is the space between the content of an element and its border.
+
+An example impelmentation using class `example`:
+```html
+
+.examle {
+        margin:20px;
+        border: 2px solid black;
+        padding: 10px;
+}
+```
+
+## Flex box and grid layout
+
+1. Flexbox is a layout module to designed to distribute space among items in a container especially when their size is dynamic. Used in responsive layouts.
+
+2. Grid layout is a module that provides a two dimensional grid based layout system. Optimized for responsive design. 
+
+
+# How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-5)
+
+I imported the tailwind cdn in `base.html`
+```html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}coquette shop{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+```
+
+I then added Tailwind CSS classes to each of the files in the `main/templates` directory, and added a navbar.
+
+Example:
+`main.html`
+
+<div style="height: 400px; overflow: auto; border: 1px solid #ddd;">
+<pre><code>
+
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">{{ application_name }}</h1>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+        <div class="px-4 py-5 sm:px-6">
+            <h2 class="text-lg leading-6 font-medium text-gray-900">User Information</h2>
+        </div>
+        <div class="border-t border-gray-200">
+            <dl>
+                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Name</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ name }}</dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Class</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ class }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    {% if not products %}
+    <p class="text-lg text-gray-600">There are no products.</p>
+    {% else %}
+
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coquetteness</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for product in products %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ product.name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.price }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.description }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.coquetteness }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{% url 'main:edit_product' product.id %}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                <a href="{% url 'main:delete_product' product.id %}" class="text-red-600 hover:text-red-900">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-4 mt-8">
+        <div class="flex justify-between items-center p-4">
+            <div>
+                <a href="{% url 'main:create_product' %}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add Product</a>
+            </div>
+            <div>
+                <a href="{% url 'main:logout' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <p class="mt-8 text-sm text-gray-500">Last login session: {{ last_login }}</p>
+</div>
+{% endblock content %}
+</code></pre>
+</div>
+
+That's all, the rest of the files are also updated to use Tailwind css classes. 
+
+I also added functions to edit and delete products, and put them in `views.py` and routed them with `urls.py`.
+
+`views.py`
+
+```py
+def edit_product(request,id):
+        product = Product.objects.get(pk=id)
+        form = ProductEntryForm(request.POST or None, instance=product)
+
+        if form.is_valid() and request.method == "POST":
+                form.save()
+                return HttpResponseRedirect(reverse('main:show_main'))
+        
+        context = {'form': form}
+        return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+        product = Product.objects.get(pk=id)
+        product.delete()
+        return HttpResponseRedirect(reverse('main:show_main'))
+```
+
+`urls.py`
+
+```py
+from django.urls import path
+from main.views import (
+...
+    edit_product,
+    delete_product,
+)
+
+app_name = 'main'
+urlpatterns = [
+...
+        path('edit-product/<uuid:id>', edit_product, name='edit_product'),
+        path('delete/<uuid:id>', delete_product, name='delete_product')
+]
+```
+
+</details>
