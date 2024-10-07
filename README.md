@@ -3,6 +3,7 @@ http://isaac-jesse-coquetteshop.pbp.cs.ui.ac.id/
 
 <details>
 <Summary><b>Assignment 2</b></Summary>
+
 # How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-2)
 
 ### Creating a new Django project
@@ -120,6 +121,7 @@ Django is called an ORM because it maps entries in a database to objects in the 
 
 <details>
 <Summary><b>Assignment 3</b></Summary>
+
 ## Why do we need Data delivery in implementing a platform?
 
 Data delivery is useful to enable asynchronous communication between users of the platform, or between the administrator of the platform and its users. Platforms cannot function effectively as just a static site.
@@ -276,6 +278,7 @@ def show_json_by_id(request, id):
 </details>
 <details>
 <Summary><b>Assignment 4</b></Summary>
+
 # How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-4)
 
 
@@ -518,6 +521,7 @@ What hapepns when a user logs in?
 
 <details>
 <Summary><b>Assignment 5</b></Summary>
+
 ## Priority of CSS Selectors
 
 1. Inline Styles
@@ -699,4 +703,253 @@ urlpatterns = [
 ]
 ```
 
+</details>
+<details>
+<Summary><b>Assignment 6</b></Summary>
+
+## Benefit of using Javascript in developing web applications
+
+1. Javascript can be executed directly on the user's browser (reduces the load on the server and can result in faster response times)
+2. Enables interactive web pages such as form validation, dynamic content update, animations
+3. Supports asynchronous commmunication (e.g. AJAX). Allows web apps to fetch data without having to require a full page reload
+4. Has a wide range of frameworks such as React, Angular, Vue, helping developers accelerate their workflow.
+5. Supported by all modern web browsers
+
+
+## Why use `await` on `fetch`?
+
+Since we are using asynchronous functions, `await` pauses the execution of the async function until `Promise` is resolved. If we do not use `await`, the code will continue without waiting for `Promise` to resolve which will result in null data or unexpected behaviour.
+
+## Why is AJAX POST csrf_exempt?
+
+It would be more cumbersome to include the CSRF validation in this case because it is an internal endpoint, although ideally we do not use `csrf_exempt`.
+
+
+## Why isn't sanitization only front-end?
+
+Front-end sanitization does not account for client side code manipulation, XSS, SQL injection or anny other injection attacks. Back-end sanitization is necessary for these. 
+
+# How I implemented the [assignment checklist](https://pbp-fasilkom-ui.github.io/ganjil-2025/en/assignments/individual/assignment-6)
+
+## Using AJAX Get for products:
+
+In `main.html`, I replaced the main product container with an asynchronous function as such:
+
+```html
+
+<script>
+    async function fetchProducts() {
+        try {
+            const response = await fetch("{% url 'main:show_json' %}");
+            const data = await response.json();
+            const productContainer = document.getElementById('product-container');
+            if (data.length === 0) {
+                productContainer.innerHTML = '<p class="text-lg text-gray-600">There are no products.</p>';
+            } else {
+                let productsHtml = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">';
+                data.forEach(product => {
+                    // Sanitize product fields with DOMPurify
+                    const sanitizedName = DOMPurify.sanitize(product.fields.name);
+                    const sanitizedDescription = DOMPurify.sanitize(product.fields.description);
+                    const sanitizedPrice = DOMPurify.sanitize(product.fields.price);
+                    const sanitizedCoquetteness = DOMPurify.sanitize(product.fields.coquetteness);
+
+                    productsHtml += `
+                        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                            <div class="p-6">
+                                <h2 class="text-xl font-semibold text-gray-800 mb-2">
+                                    <span class="text-gray-600">Name:</span> ${sanitizedName}
+                                </h2>
+                                <p class="text-gray-600 mb-4">
+                                    <span class="font-semibold">Description:</span> ${sanitizedDescription}
+                                </p>
+                                <div class="flex justify-between items-center mb-4">
+                                    <span class="text-lg font-bold text-gray-900">
+                                        <span class="text-gray-600 font-normal">Price:</span> $${sanitizedPrice}
+                                    </span>
+                                    <span class="text-sm text-gray-500">
+                                        <span class="font-semibold">Coquetteness:</span> ${sanitizedCoquetteness}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <a href="/edit-product/${product.pk}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                    <a href="/delete/${product.pk}" class="text-red-600 hover:text-red-900">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                productsHtml += '</div>';
+                productContainer.innerHTML = DOMPurify.sanitize(productsHtml); // Sanitize HTML before injecting
+            }
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        }
+    }
+
+...
+```
+
+This asynchronously fetches the products using `show_json`. I also do not use cards. The "card" is directly embedded in the function. To ensure that the data returned belongs only to the logged in user, the `show_json` function must be as follows:
+
+`views.py`
+```py
+def show_json(request):
+    data = Product.objects.filter(user=request.user)
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+```
+
+## Creating AJAX POST and its Modal
+
+To add the button to access the modal/form: 
+`main.html`
+
+```html
+...
+        <div class="flex justify-end mb-6">
+        <a href="{% url 'main:create_product' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 mx-4">Add Product</a>
+        <button id="addProductAjax" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105">Add Product by AJAX</button>
+    </div>
+...
+```
+This links to the product entry modal as follows:
+
+`main.html`
+
+```html
+<div id="productModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Add New Product</h3>
+            <div class="mt-2 px-7 py-3">
+                <input id="productName" type="text" placeholder="Name" class="mb-3 px-3 py-2 border rounded-lg w-full">
+                <input id="productPrice" type="number" step="0.01" placeholder="Price" class="mb-3 px-3 py-2 border rounded-lg w-full">
+                <input id="productCoquetteness" type="number" placeholder="Coquetteness" class="mb-3 px-3 py-2 border rounded-lg w-full">
+                <textarea id="productDescription" placeholder="Description" class="mb-3 px-3 py-2 border rounded-lg w-full"></textarea>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="submitProduct" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                    Add Product
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+To create a product using AJAX, a new function must be created and routed:
+
+`views.py`
+
+```py
+@csrf_exempt
+@require_POST
+def create_product_ajax(request):
+    try:
+        data = json.loads(request.body)
+        
+        # Strip HTML tags and remove leading/trailing whitespace
+        name = strip_tags(data.get("name", "")).strip()
+        description = strip_tags(data.get("description", "")).strip()
+        
+        # Convert price to Decimal
+        try:
+            price = Decimal(data.get("price", "0"))
+        except InvalidOperation:
+            return JsonResponse({"status": "error", "message": "Invalid price format"}, status=400)
+
+        # Convert coquetteness to integer
+        try:
+            coquetteness = int(data.get("coquetteness", "0"))
+        except ValueError:
+            return JsonResponse({"status": "error", "message": "Invalid coquetteness format"}, status=400)
+
+        # Print debug information
+        print(f"Received data: {data}")
+        print(f"Processed name: {name}")
+        print(f"Processed description: {description}")
+        print(f"Processed price: {price}")
+        print(f"Processed coquetteness: {coquetteness}")
+
+        product = Product.objects.create(
+            name=name,
+            price=price,
+            coquetteness=coquetteness,
+            description=description,
+            user=request.user
+        )
+        return JsonResponse({"status": "success", "id": product.id}, status=201)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON in request body"}, status=400)
+    except Exception as e:
+        print(f"Error creating product: {str(e)}")
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+```
+
+`urls.py`
+
+```py
+from django.urls import path
+from main.views import (
+...
+    create_product_ajax,
+)
+
+app_name = 'main'
+urlpatterns = [
+    path('', show_main, name = 'show_main'),
+...
+        path('create-product-ajax', create_product_ajax, name='create_product_ajax'),
+]
+
+```
+
+To perform asynchronous refresh on the main page:
+
+`main.html`
+
+```js
+    // Submit new product
+    document.getElementById('submitProduct').addEventListener('click', async function() {
+        const name = DOMPurify.sanitize(document.getElementById('productName').value);
+        const price = DOMPurify.sanitize(document.getElementById('productPrice').value);
+        const coquetteness = DOMPurify.sanitize(document.getElementById('productCoquetteness').value);
+        const description = DOMPurify.sanitize(document.getElementById('productDescription').value);
+
+        try {
+            const response = await fetch("{% url 'main:create_product_ajax' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    price: price,
+                    coquetteness: coquetteness,
+                    description: description
+                })
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                // Close the modal and refresh the product list
+                document.getElementById('productModal').classList.add('hidden');
+                fetchProducts();
+                // Clear the form
+                document.getElementById('productName').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productCoquetteness').value = '';
+                document.getElementById('productDescription').value = '';
+            } else {
+                alert('Failed to add product');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
+```
+
+Upon submitting the create_product_ajax form, we fetch all products and then update the page accordingly.
+</Summary>
 </details>
