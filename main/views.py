@@ -12,6 +12,8 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
+from decimal import Decimal, InvalidOperation
+import json
 
 # Create your views here.
 
@@ -104,40 +106,47 @@ def delete_product(request, id):
 @csrf_exempt
 @require_POST
 def create_product_ajax(request):
-    name = strip_tags(request.POST.get("name"))  # strip HTML tags!
-    price = request.POST.get("price")
-    description = strip_tags(request.POST.get("description"))  # strip HTML tags!
-    coquetteness = request.POST.get("coquetteness")
-    user = request.user
+    try:
+        data = json.loads(request.body)
+        
+        # Strip HTML tags and remove leading/trailing whitespace
+        name = strip_tags(data.get("name", "")).strip()
+        description = strip_tags(data.get("description", "")).strip()
+        
+        # Convert price to Decimal
+        try:
+            price = Decimal(data.get("price", "0"))
+        except InvalidOperation:
+            return JsonResponse({"status": "error", "message": "Invalid price format"}, status=400)
 
-    new_product = Product(
-        name=name, price=price,
-        description=description,
-        coquetteness=coquetteness,
-        user=user
-    )
-    new_product.save()
+        # Convert coquetteness to integer
+        try:
+            coquetteness = int(data.get("coquetteness", "0"))
+        except ValueError:
+            return JsonResponse({"status": "error", "message": "Invalid coquetteness format"}, status=400)
 
-    return HttpResponse(b"CREATED", status=201)
+        # Print debug information
+        print(f"Received data: {data}")
+        print(f"Processed name: {name}")
+        print(f"Processed description: {description}")
+        print(f"Processed price: {price}")
+        print(f"Processed coquetteness: {coquetteness}")
+
+        product = Product.objects.create(
+            name=name,
+            price=price,
+            coquetteness=coquetteness,
+            description=description,
+            user=request.user
+        )
+        return JsonResponse({"status": "success", "id": product.id}, status=201)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON in request body"}, status=400)
+    except Exception as e:
+        print(f"Error creating product: {str(e)}")
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 def get_products_ajax(request):
     data = Product.objects.all()
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
 
-def add_product_ajax(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        price = request.POST.get('price')
-        description = request.POST.get('description')
-        coquetteness = request.POST.get('coquetteness')
-        
-        product = Product.objects.create(
-            name=name,
-            price=price,
-            description=description,
-            coquetteness=coquetteness
-        )
-        
-        return JsonResponse({'status': 'success', 'message': 'Product added successfully'})
-    
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
